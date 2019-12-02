@@ -121,6 +121,8 @@ b2sums=('be5a11624eecfe6c5a54088ce8872a1f2e24f2ac3f5a32a848a115b873b8ac3ee2a3aae
         'SKIP')
 
 export LDFLAGS="$LDFLAGS -static"
+export CFLAGS="$CFLAGS -fPIC"
+export CXXFLAGS="$CXXFLAGS -fPIC"
 export CC=musl-gcc
 export CXX=musl-gcc
 
@@ -210,7 +212,7 @@ build() {
 
     # libarchive
     cd "${srcdir}"/libarchive-${_libarchive_ver}
-    CPPFLAGS="-I${srcdir}/temp/usr/include" CFLAGS="-L${srcdir}/temp/usr/lib" \
+    CPPFLAGS="-I${srcdir}/temp/usr/include" CFLAGS="$CFLAGS -L${srcdir}/temp/usr/lib" \
         ./configure --prefix="${srcdir}"/temp/usr \
                     --without-xml2 \
                     --without-nettle \
@@ -284,6 +286,7 @@ build() {
     # Finally, it's a pacman!
     cd "${srcdir}"/pacman-${pkgver}
     ./configure --prefix=/usr \
+                --includedir=/usr/lib/pacman/include \
                 --libdir=/usr/lib/pacman/lib \
                 --sysconfdir=/etc \
                 --localstatedir=/var \
@@ -297,7 +300,7 @@ build() {
 
 package() {
     cd "${srcdir}"/pacman-${pkgver}
-    make -C lib/libalpm  DESTDIR="${pkgdir}" install-libLTLIBRARIES install-pkgconfigDATA
+    make -C lib/libalpm  DESTDIR="${pkgdir}" install-{libLTLIBRARIES,includeHEADERS,pkgconfigDATA}
     make -C src/util  DESTDIR="${pkgdir}" install
     make -C src/pacman  DESTDIR="${pkgdir}" install-binPROGRAMS
 
