@@ -159,16 +159,16 @@ class DependencyChecker:
         try:
             _file = open(path, "r")
             yaml_obj = yaml.load(_file)
-            if "depends" in yaml_obj:
+            if "repo_depends" in yaml_obj:
                 cn_deps = []
-                depends = yaml_obj.get("depends")
-                for depend in depends:
-                    if isinstance(depend, dict):        # 'is' is different from 'isinstance'
-                        for k, v in depend.items():
+                repo_depends = yaml_obj.get("repo_depends")
+                for repo_depend in repo_depends:
+                    if isinstance(repo_depend, dict):        # 'is' is different from 'isinstance'
+                        for k, v in repo_depend.items():
                             # cn_deps would contain either string or tuple
                             cn_deps.append((k, v))
                     else:
-                        cn_deps.append(depend)
+                        cn_deps.append(repo_depend)
             _file.close()
 
             if "build_prefix" in yaml_obj:
@@ -188,8 +188,8 @@ class DependencyChecker:
             pass
 
         try:
-            assert mod.depends
-            cn_deps = mod.depends
+            assert mod.repo_depends
+            cn_deps = mod.repo_depends
         except Exception as e:
             pass
 
