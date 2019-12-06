@@ -132,14 +132,11 @@ class DependencyChecker:
         build_prefix = ""
         lilac_py_path = os.path.join(self.REPO_ROOT, pkg_base, "lilac.py")
         lilac_yaml_path = os.path.join(self.REPO_ROOT, pkg_base, "lilac.yaml")
-        try:
-            _file = open(lilac_py_path, "r")
-            _file.close()
-        except FileNotFoundError:
-            return (None, None)
 
-        yaml_cn_deps, yaml_build_prefix = self._parse_lilac_yaml(
+        yaml_cn_deps, yaml_build_prefix, managed = self._parse_lilac_yaml(
             lilac_yaml_path)
+        if not managed:
+            return None, None
         py_cn_deps, py_build_prefix = self._parse_lilac_py(lilac_py_path)
 
         cn_deps = py_cn_deps if py_cn_deps is not None else yaml_cn_deps
@@ -159,6 +156,8 @@ class DependencyChecker:
         try:
             _file = open(path, "r")
             yaml_obj = yaml.load(_file)
+            if not yaml_obj.get("managed", True):
+                return None, None, False
             if "repo_depends" in yaml_obj:
                 cn_deps = []
                 repo_depends = yaml_obj.get("repo_depends")
@@ -175,7 +174,7 @@ class DependencyChecker:
                 build_prefix = yaml_obj.get("build_prefix")
         except FileNotFoundError:
             pass
-        return cn_deps, build_prefix
+        return cn_deps, build_prefix, True
 
     def _parse_lilac_py(self, path):
         cn_deps = build_prefix = None
