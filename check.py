@@ -1,5 +1,6 @@
 import os
 import importlib.util
+import pathlib
 import shlex
 import subprocess
 import types
@@ -10,6 +11,7 @@ import yaml
 import pycman.config
 import pyalpm
 
+THIS_DIR = pathlib.Path(__file__).parent.resolve()
 
 class DependencyChecker:
     check_pass = {}
@@ -96,10 +98,10 @@ class DependencyChecker:
 
         if not split:
             cmd = shlex.split(
-                "/bin/bash -c '{}/printpkgenv.sh {} 2>/dev/null'".format(self.REPO_ROOT, pkgbuild_dir))
+                "/bin/bash -c '{}/printpkgenv.sh {}'".format(THIS_DIR, pkgbuild_dir))
         else:
             cmd = shlex.split(
-                "/bin/bash -c '{}/printpkgenv.sh {} {} 2>/dev/null'".format(self.REPO_ROOT, pkgbuild_dir, pkg_name))
+                "/bin/bash -c '{}/printpkgenv.sh {} {}'".format(THIS_DIR, pkgbuild_dir, pkg_name))
 
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                 encoding="UTF-8", stderr=None)
