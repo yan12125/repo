@@ -155,7 +155,7 @@ class DependencyChecker:
         build_prefix = ""
         try:
             _file = open(path, "r")
-            yaml_obj = yaml.load(_file)
+            yaml_obj = yaml.safe_load(_file)
             if not yaml_obj.get("managed", True):
                 return None, None, False
             if "repo_depends" in yaml_obj:
