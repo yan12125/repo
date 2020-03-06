@@ -1,5 +1,6 @@
 # Maintainer: Butui Hu <hot123tea123@gmail.com>
 
+_pkgname=onnx
 pkgname=python-onnx
 pkgver=1.9.0
 pkgrel=2
@@ -13,12 +14,12 @@ depends=(
   python-numpy
   python-six
   python-typing_extensions
+  pybind11
 )
 makedepends=(
   cmake
-  git
   python-setuptools
-  python-pip
+  chrpath
 )
 checkdepends=(
   python-nbval
@@ -26,31 +27,38 @@ checkdepends=(
   python-pytest
   python-scipy
 )
-source=("${pkgname}::git+https://github.com/onnx/onnx.git#tag=v${pkgver}")
-sha512sums=('SKIP')
+source=("https://github.com/onnx/onnx/archive/v$pkgver/onnx-$pkgver.tar.gz"
+        libonnx-shared.diff)
+sha512sums=('6afb0305728d98e600c9aaa80c01553c90066fbc8f9445626207f57e46d92fd2e2f82cdddd56f257fbbaad7297470b94ce0007ba3afb3c2cbf1548dbd6ba0235'
+            '06c9c6b0e1758c22d5f5bf62d77c2f3d836a206a86baca276b3c449b5f9f2214b752f2260bf39e0f5ebf40a058e0ca151fafa177da8baeb7e3d93f0b42c213b0')
+options=(!emptydirs)
 
 get_pyver() {
   python -c 'import sys; print(str(sys.version_info[0]) + "." + str(sys.version_info[1]))'
 }
 
 prepare() {
-  cd "${srcdir}/${pkgname}"
-  git submodule update --init --recursive
+  cd "${srcdir}/${_pkgname}-${pkgver}"
+  patch -Np1 -i ../libonnx-shared.diff
+  sed -i "/'pytest-runner'/d" setup.py
 }
 
 build() {
-  cd "${pkgname}"
+  cd "${_pkgname}-${pkgver}"
+  CMAKE_ARGS="-DCMAKE_INSTALL_PREFIX=/usr" \
   python setup.py build
 }
 
 check() {
-  cd "${srcdir}/${pkgname}"
+  cd "${srcdir}/${_pkgname}-${pkgver}"
   PYTHONPATH="${PWD}/build/lib.linux-${CARCH}-$(get_pyver)" pytest -v
 }
 
 package() {
-  cd "${pkgname}"
+  cd "${_pkgname}-${pkgver}"
   python setup.py install --root="${pkgdir}" --optimize=1 --skip-build
+  make -C .setuptools-cmake-build install DESTDIR="$pkgdir"
+  chrpath --delete "$pkgdir"/usr/lib/python$(get_pyver)/site-packages/onnx/*.so
   install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
 }
 # vim:set ts=2 sw=2 et:
